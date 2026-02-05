@@ -1,8 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 import '../models/persona.dart';
 import 'personal_page.dart';
@@ -34,31 +34,40 @@ class _HomePageState extends State<HomePage> {
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final results = data['results'] as List<dynamic>;
 
-    return results.map((e) => Persona.fromJson(e as Map<String, dynamic>)).toList();
+    return results
+        .map((e) => Persona.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   void _openDetail(Persona p) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PersonalPage(personaId: p.id)),
+      MaterialPageRoute(
+        builder: (_) => PersonalPage(personaId: p.id),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Rick and Morty (PF3)')),
+      appBar: AppBar(
+        title: const Text('Rick and Morty (PF3)'),
+      ),
       body: FutureBuilder<List<Persona>>(
         future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snap.hasError) {
-            return Center(child: Text('Error: ${snap.error}'));
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
           }
 
-          final personas = snap.data ?? [];
+          final personas = snapshot.data ?? [];
           if (personas.isEmpty) {
             return const Center(child: Text('Sin datos'));
           }
@@ -71,7 +80,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 12),
 
+                // -------------------------
                 // CardSwiper (obligatorio)
+                // -------------------------
                 SizedBox(
                   height: 420,
                   child: CardSwiper(
@@ -89,7 +100,12 @@ class _HomePageState extends State<HomePage> {
                                 p.image,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
-                                    const Center(child: Icon(Icons.broken_image, size: 48)),
+                                    const Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        size: 48,
+                                      ),
+                                    ),
                               ),
                               Align(
                                 alignment: Alignment.bottomLeft,
@@ -114,7 +130,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Align(
@@ -125,46 +142,55 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 8),
 
-                // Slider (obligatorio)
-                CarouselSlider(
-                  options: CarouselOptions(
-                    height: 220,
-                    enlargeCenterPage: true,
-                    viewportFraction: 0.6,
-                  ),
-                  items: sliderItems.map((p) {
-                    return GestureDetector(
-                      onTap: () => _openDetail(p),
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.network(
-                              p.image,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const Center(child: Icon(Icons.broken_image, size: 48)),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                color: Colors.black54,
-                                child: Text(
-                                  p.name,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(color: Colors.white),
+                // -------------------------
+                // CarouselView (slider)
+                // -------------------------
+                SizedBox(
+                  height: 220,
+                  child: CarouselView(
+                    itemExtent: 260,
+                    shrinkExtent: 240,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: sliderItems.map((p) {
+                      return GestureDetector(
+                        onTap: () => _openDetail(p),
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                p.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    const Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        size: 48,
+                                      ),
+                                    ),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  color: Colors.black54,
+                                  child: Text(
+                                    p.name,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
                                 ),
                               ),
-                            )
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
 
                 const SizedBox(height: 16),
