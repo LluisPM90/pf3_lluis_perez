@@ -80,9 +80,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 12),
 
-                // -------------------------
-                // CardSwiper (obligatorio)
-                // -------------------------
+                // =====================================================
+                // CardSwiper (OPCIÓ 1: sense zoom excessiu)
+                // =====================================================
                 SizedBox(
                   height: 420,
                   child: CardSwiper(
@@ -96,16 +96,21 @@ class _HomePageState extends State<HomePage> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.network(
-                                p.image,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    const Center(
-                                      child: Icon(
-                                        Icons.broken_image,
-                                        size: 48,
+                              Container(
+                                color: Colors.black,
+                                child: Image.network(
+                                  p.image,
+                                  fit: BoxFit.contain, // 🔑 OPCIÓ 1
+                                  alignment: Alignment.center,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
+                                ),
                               ),
                               Align(
                                 alignment: Alignment.bottomLeft,
@@ -145,9 +150,9 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 8),
 
-                // -------------------------
-                // CarouselView (slider)
-                // -------------------------
+                // =====================================================
+                // Slider (CarouselView natiu)
+                // =====================================================
                 SizedBox(
                   height: 220,
                   child: CarouselView(
@@ -181,7 +186,8 @@ class _HomePageState extends State<HomePage> {
                                   child: Text(
                                     p.name,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white),
+                                    style:
+                                        const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),

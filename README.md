@@ -1,6 +1,6 @@
 # PF3 – Rick and Morty API (Flutter)
 
-Práctica Final 3  
+Práctica UT3 
 Módulo: Programación Multimèdia i Dispositius Mòbils  
 Curso: 2025–2026  
 Alumno: Lluís Pérez  
