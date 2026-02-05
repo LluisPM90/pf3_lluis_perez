@@ -1,6 +1,7 @@
 # PF3 – Rick and Morty API (Flutter)
 
 Práctica UT3 
+
 Módulo: Programación Multimèdia i Dispositius Mòbils  
 Curso: 2025–2026  
 Alumno: Lluís Pérez  
@@ -18,7 +19,7 @@ La aplicación presenta:
 - Consumo de una API REST en formato JSON
 - Modelado de datos generado con **quicktype**
 
-Este proyecto se ha realizado como práctica individual siguiendo las directrices indicadas en el enunciado de la **Práctica Final 3**.
+Este proyecto se ha realizado como práctica individual siguiendo las directrices indicadas en el enunciado de la **Práctica UT3**.
 
 ---
 
