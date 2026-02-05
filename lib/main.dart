@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'screens/home_page.dart';
 
-void main() {
-  runApp(const Pf2App());
-}
+void main() => runApp(const MyApp());
 
-class Pf2App extends StatelessWidget {
-  // Stateless: no manté estat intern; només configura l'app.
-  const Pf2App({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PF2',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
+      title: 'PF3 Rick and Morty',
       home: const HomePage(),
     );
   }
