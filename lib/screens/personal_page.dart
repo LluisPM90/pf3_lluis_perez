@@ -1,151 +1,81 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import '../models/persona.dart';
 
-class PersonalPage extends StatefulWidget {
-  // Stateful: perquè gestionam TextEditingControllers, validació i selecció de data.
-  final Persona personaInicial;
+class PersonalPage extends StatelessWidget {
+  final int personaId;
+  const PersonalPage({super.key, required this.personaId});
 
-  const PersonalPage({super.key, required this.personaInicial});
+  Future<Persona> _fetchPersonaDetail(int id) async {
+    final uri = Uri.parse('https://rickandmortyapi.com/api/character/$id');
+    final res = await http.get(uri);
 
-  @override
-  State<PersonalPage> createState() => _PersonalPageState();
-}
-
-class _PersonalPageState extends State<PersonalPage> {
-  final _formKey = GlobalKey<FormState>();
-
-  late final TextEditingController _nomCtrl;
-  late final TextEditingController _cognomCtrl;
-  late final TextEditingController _correuCtrl;
-  late final TextEditingController _passCtrl;
-
-  late DateTime _dataNaixement;
-
-  @override
-  void initState() {
-    super.initState();
-    final p = widget.personaInicial;
-    _nomCtrl = TextEditingController(text: p.nom);
-    _cognomCtrl = TextEditingController(text: p.cognom);
-    _correuCtrl = TextEditingController(text: p.correu);
-    _passCtrl = TextEditingController(text: p.contrasenya);
-    _dataNaixement = p.dataNaixement;
-  }
-
-  @override
-  void dispose() {
-    _nomCtrl.dispose();
-    _cognomCtrl.dispose();
-    _correuCtrl.dispose();
-    _passCtrl.dispose();
-    super.dispose();
-  }
-
-  String _formatData(DateTime d) =>
-      "${d.day.toString().padLeft(2, '0')}/"
-      "${d.month.toString().padLeft(2, '0')}/"
-      "${d.year}";
-
-  Future<void> _triarData() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dataNaixement,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null) {
-      setState(() => _dataNaixement = picked);
+    if (res.statusCode != 200) {
+      throw Exception('Error HTTP ${res.statusCode}: ${res.body}');
     }
+
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return Persona.fromJson(data);
   }
 
-  void _desar() {
-    if (_formKey.currentState?.validate() != true) return;
-
-    final personaModificada = Persona(
-      nom: _nomCtrl.text.trim(),
-      cognom: _cognomCtrl.text.trim(),
-      dataNaixement: _dataNaixement,
-      correu: _correuCtrl.text.trim(),
-      contrasenya: _passCtrl.text,
-    );
-
-    // Retornam l'objecte a la HomePage
-    Navigator.pop(context, personaModificada);
-  }
+  Widget _row(String k, String v) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 90,
+              child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Expanded(child: Text(v)),
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Pérez")), // posa aquí el teu cognom
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nomCtrl,
-                decoration: const InputDecoration(labelText: "Nom"),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? "Introdueix el nom" : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _cognomCtrl,
-                decoration: const InputDecoration(labelText: "Cognom"),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? "Introdueix el cognom"
-                    : null,
-              ),
-              const SizedBox(height: 12),
+      appBar: AppBar(title: const Text('Detalle')),
+      body: FutureBuilder<Persona>(
+        future: _fetchPersonaDetail(personaId),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
 
-              // Data de naixement (camp “fake” + botó)
-              InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: "Data de naixement",
-                  border: OutlineInputBorder(),
+          final p = snap.data!;
+          return ListView(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  p.image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      const Center(child: Icon(Icons.broken_image, size: 48)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_formatData(_dataNaixement)),
-                    TextButton(
-                      onPressed: _triarData,
-                      child: const Text("Canvia"),
-                    ),
+                    Text(p.name, style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 12),
+                    _row('Status', p.status),
+                    _row('Species', p.species),
+                    _row('Gender', p.gender),
+                    _row('Origin', p.originName),
+                    _row('Location', p.locationName),
+                    _row('Episodes', '${p.episodeCount}'),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _correuCtrl,
-                decoration: const InputDecoration(labelText: "Correu electrònic"),
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) {
-                  final text = (v ?? "").trim();
-                  if (text.isEmpty) return "Introdueix el correu";
-                  if (!text.contains("@")) return "Format de correu incorrecte";
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passCtrl,
-                decoration: const InputDecoration(labelText: "Contrasenya"),
-                obscureText: true,
-                validator: (v) =>
-                    (v == null || v.length < 4) ? "Mínim 4 caràcters" : null,
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _desar,
-                child: const Text("Desa"),
-              ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
